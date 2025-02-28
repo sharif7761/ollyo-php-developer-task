@@ -117,7 +117,7 @@ Routes::get('/thank-you', function ($request) {
             ];
             return view('success', $data);
         }
-    } catch (HttpException $ex) {
+    } catch (\PayPalHttp\HttpException $ex) {
         $errorMessage = $ex->getMessage();
         return view('error', ['errorMessage' => $errorMessage]);
 
