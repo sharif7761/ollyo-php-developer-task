@@ -92,7 +92,6 @@ Routes::post('/checkout', function ($request) {
         $response = $client->execute($request);
         foreach ($response->result->links as $link) {
             if ($link->rel === 'approve') {
-                // Redirect the user to the PayPal approval URL
                 header('Location: ' . $link->href);
                 exit;
             }
@@ -100,15 +99,6 @@ Routes::post('/checkout', function ($request) {
     } catch (HttpException $ex) {
         echo $ex->getMessage();
     }
-    // @todo: Implement PayPal payment gateway integration here
-    // 1. Initialize PayPal API client with credentials
-    // 2. Create payment with order details from $data
-    // 3. Execute payment and handle response
-    // 4. If payment successful, save order and redirect to thank you page
-    // 5. If payment fails, redirect to error payment page with message
-
-    // Consider creating a dedicated controller class to handle payment processing
-    // This helps separate payment logic from routing and keeps code organized
 });
 
 Routes::get('/thank-you', function ($request) {
@@ -137,6 +127,15 @@ Routes::get('/thank-you', function ($request) {
 Routes::get('/payment-error', function ($request) {
     $errorMessage = isset($request['error']) ? $request['error'] : 'An unknown error has occurred.';
     return view('error', ['errorMessage' => $errorMessage]);
+});
+
+Routes::post('/subscribe', function ($request) {
+$planId = $request['plan_id'];
+if (empty($planId)) {
+    return view('error', ['errorMessage' => 'Plan ID is required']);
+}
+    $client = PayPalClient::client();
+
 });
 
 $route = Routes::getInstance();
