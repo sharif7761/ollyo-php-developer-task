@@ -5,6 +5,9 @@ $shippingCost = $data['shipping_cost'];
 
 // @todo: Calculate the subtotal from the products array
 $subtotal = 0;
+foreach ($products as $product) {
+    $subtotal += $product['qty'] * $product['price'];
+}
 $total = $subtotal + $shippingCost;
 ?>
 
@@ -59,7 +62,10 @@ $total = $subtotal + $shippingCost;
                         <p>Total</p>
                         <p>$<?php echo $total; ?></p>
                     </div>
-                    <button class="inline-flex w-full items-center justify-center gap-2 text-sm font-medium whitespace-nowrap rounded-md transition-colors ring-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gray-800 text-white hover:bg-gray-700/90 h-9 px-4 py-2">Place Order</button>
+                    <input type="hidden" name="total" value="<?php echo $total; ?>">
+                    <button
+                            type="submit"
+                            class="inline-flex w-full items-center justify-center gap-2 text-sm font-medium whitespace-nowrap rounded-md transition-colors ring-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gray-800 text-white hover:bg-gray-700/90 h-9 px-4 py-2">Place Order</button>
                 </div>
             </div>
             <div class="grid grid-cols-[auto_calc(350px_+2rem)]">
@@ -71,14 +77,13 @@ $total = $subtotal + $shippingCost;
                             <input type="text" name="name" placeholder="Enter your full name" value="<?php echo $address['name']; ?>" id="name" class="bg-white px-2 text-sm rounded-md border border-gray-300 h-10 placeholder:text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-700 focus-visible:ring-offset-2">
                         </div>
                         <div class="space-y-1 flex flex-col">
-                            <label class="text-sm text-gray-800 font-medium" for="name">Email</label>
+                            <label class="text-sm text-gray-800 font-medium" for="email">Email</label>
                             <input type="email" name="email" placeholder="Enter your email" value="<?php echo $address['email']; ?>" id="email" class="bg-white px-2 text-sm rounded-md border border-gray-300 h-10 placeholder:text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-700 focus-visible:ring-offset-2">
                         </div>
                         <div class="space-y-1 flex flex-col">
                             <label class="text-sm text-gray-800 font-medium" for="address">Address</label>
                             <input type="text" name="address" placeholder="Enter your address" id="address" value="<?php echo $address['address']; ?>" class="bg-white px-2 text-sm rounded-md border border-gray-300 h-10 placeholder:text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-700 focus-visible:ring-offset-2">
                         </div>
-            
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-1 flex flex-col">
                                 <label class="text-sm text-gray-800 font-medium" for="city">City</label>

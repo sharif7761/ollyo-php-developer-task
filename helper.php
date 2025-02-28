@@ -51,6 +51,20 @@ if (!function_exists('view')) {
     function view(string $name, array $data) {
         // @todo: Complete the view function so that we could render a view with data.
         // e.g. view('checkout', $data);
+        $viewFile = __DIR__ . "/src/Views/{$name}.php";
+        if (!file_exists($viewFile)) {
+            throw new Exception("View file not found");
+        }
+        ob_start();
+
+        try {
+            include $viewFile;
+        } catch (Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
+
+        return ob_get_clean();
     }
 }
 

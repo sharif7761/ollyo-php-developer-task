@@ -12,5 +12,8 @@
             "email": "hello@ollyo.com"
         }
     ],
-    "require": {}
+    "require": {
+        "paypal/rest-api-sdk-php": "^1.14",
+        "paypal/paypal-checkout-sdk": "^1.0"
+    }
 }

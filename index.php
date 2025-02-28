@@ -1,6 +1,10 @@
 <?php
 
 use Ollyo\Task\Routes;
+use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
+use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
+use Ollyo\Task\Payment\PayPalClient;
+
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/helper.php';
@@ -57,6 +61,45 @@ Routes::get('/checkout', function () use ($data) {
 });
 
 Routes::post('/checkout', function ($request) {
+    $data = [
+        'order_id' => uniqid(),
+        'amount' => $request['total'],
+        'currency' => 'USD',
+    ];
+
+    $client = PayPalClient::client();
+    $request = new OrdersCreateRequest();
+    $request->prefer('return=representation');
+    $request->body = [
+        'intent' => 'CAPTURE',
+        'purchase_units' => [[
+            'reference_id' => $data['order_id'],
+            'amount' => [
+                'value' => $data['amount'],
+                'currency_code' => $data['currency']
+            ]
+        ]],
+        'application_context' => [
+            'brand_name' => 'My Company Name',
+            'landing_page' => 'BILLING',
+            'user_action' => 'PAY_NOW',
+            'return_url' => 'http://localhost:8000/thank-you', // Redirect on successful payment
+            'cancel_url' => 'http://localhost:8000/payment-error' // Redirect on cancellation
+        ]
+    ];
+
+    try {
+        $response = $client->execute($request);
+        foreach ($response->result->links as $link) {
+            if ($link->rel === 'approve') {
+                // Redirect the user to the PayPal approval URL
+                header('Location: ' . $link->href);
+                exit;
+            }
+        }
+    } catch (HttpException $ex) {
+        echo $ex->getMessage();
+    }
     // @todo: Implement PayPal payment gateway integration here
     // 1. Initialize PayPal API client with credentials
     // 2. Create payment with order details from $data
@@ -68,7 +111,33 @@ Routes::post('/checkout', function ($request) {
     // This helps separate payment logic from routing and keeps code organized
 });
 
-// Register thank you & payment failed routes with corresponding views here.
+Routes::get('/thank-you', function ($request) {
+    $client = PayPalClient::client();
+    $orderId = $_GET['token'];
+
+    $request = new OrdersCaptureRequest($orderId);
+    $request->prefer('return=representation');
+
+    try {
+        $response = $client->execute($request);
+
+        if ($response->statusCode === 201 || $response->result->status === 'COMPLETED') {
+            $data = [
+                'order_id' => $response->result->id,
+            ];
+            return view('success', $data);
+        }
+    } catch (HttpException $ex) {
+        $errorMessage = $ex->getMessage();
+        return view('error', ['errorMessage' => $errorMessage]);
+
+    }
+});
+
+Routes::get('/payment-error', function ($request) {
+    $errorMessage = isset($request['error']) ? $request['error'] : 'An unknown error has occurred.';
+    return view('error', ['errorMessage' => $errorMessage]);
+});
 
 $route = Routes::getInstance();
 $route->dispatch();
